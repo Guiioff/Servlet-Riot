@@ -9,10 +9,10 @@ public class Champion {
 	
 	public Champion() {}
 
-	public Champion(String championName, String title) {
+	public Champion(String championName, String masteryPoints) {
 		super();
 		this.championName = championName;
-		this.title = title;
+		this.masteryPoints = masteryPoints;
 	}
 
 	public String getChampionId() {
