@@ -1,56 +1,56 @@
 package br.com.devgui.model;
 
 public class Champion {
-	
-	private String championId;
-	private String championName;
-	private String title;
-	private String masteryPoints;
-	
-	public Champion() {}
 
-	public Champion(String championId, String masteryPoints) {
-		super();
-		this.championId = championId;
-		this.masteryPoints = masteryPoints;
-	}
+  private String championId;
+  private String championName;
+  private String title;
+  private String masteryPoints;
 
-	public String getChampionId() {
-		return championId;
-	}
+  public Champion() {}
 
-	public void setChampionId(String championId) {
-		this.championId = championId;
-	}
+  public Champion(String championId, String masteryPoints) {
+    super();
+    this.championId = championId;
+    this.masteryPoints = masteryPoints;
+  }
 
-	public String getChampionName() {
-		return championName;
-	}
+  public String getChampionId() {
+    return championId;
+  }
 
-	public void setChampionName(String championName) {
-		this.championName = championName;
-	}
+  public void setChampionId(String championId) {
+    this.championId = championId;
+  }
 
-	public String getTitle() {
-		return title;
-	}
+  public String getChampionName() {
+    return championName;
+  }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+  public void setChampionName(String championName) {
+    this.championName = championName;
+  }
 
-	public String getMasteryPoints() {
-		return masteryPoints;
-	}
+  public String getTitle() {
+    return title;
+  }
 
-	public void setMasteryPoints(String masteryPoints) {
-		this.masteryPoints = masteryPoints;
-	}
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-	@Override
-	public String toString() {
-		return "Champion [championId=" + championId + ", championName=" + championName + ", title=" + title
-				+ ", masteryPoints=" + masteryPoints + "]";
-	}
-	
+  public String getMasteryPoints() {
+    return masteryPoints;
+  }
+
+  public void setMasteryPoints(String masteryPoints) {
+    this.masteryPoints = masteryPoints;
+  }
+
+  @Override
+  public String toString() {
+    return "Champion [championId=" + championId + ", championName=" + championName + ", title="
+        + title + ", masteryPoints=" + masteryPoints + "]";
+  }
+
 }
