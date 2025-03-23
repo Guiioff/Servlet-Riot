@@ -9,9 +9,9 @@ public class Champion {
 	
 	public Champion() {}
 
-	public Champion(String championName, String masteryPoints) {
+	public Champion(String championId, String masteryPoints) {
 		super();
-		this.championName = championName;
+		this.championId = championId;
 		this.masteryPoints = masteryPoints;
 	}
 
