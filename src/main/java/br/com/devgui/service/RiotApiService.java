@@ -5,9 +5,16 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
+import br.com.devgui.model.Champion;
 import br.com.devgui.model.Player;
 
 public class RiotApiService {
@@ -42,6 +49,37 @@ public class RiotApiService {
 			}
 			
 			return gson.fromJson(response.body(), Player.class);
+			
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch(InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public List<Champion> getChampionMasteryId(String puuid) {
+		try {
+			String urlWithParams = URL_CHAMPION_MASTERY + puuid + "/top?count=3&api_key=" + API_KEY;
+			HttpRequest request = createRequest(urlWithParams);
+			HttpResponse<String> response = sendRequest(request);
+			
+			if (response.statusCode() == 400) {
+				throw new RuntimeException("PUUID is wrong.");
+			}
+			
+			String responseBody = response.body();
+			JsonArray jsonArray = JsonParser.parseString(responseBody).getAsJsonArray();
+			
+			List<Champion> champions = new ArrayList<>();
+			for (JsonElement element : jsonArray) {
+				JsonObject jsonObject = element.getAsJsonObject();
+				
+				String championId = jsonObject.get("championId").getAsString();
+				String masteryPoints = jsonObject.get("championPoints").getAsString();
+				
+				champions.add(new Champion(championId, masteryPoints));
+			}
+			return champions;
 			
 		} catch (IOException e) {
 			throw new RuntimeException(e);
