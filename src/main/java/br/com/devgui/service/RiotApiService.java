@@ -8,6 +8,8 @@ import java.net.http.HttpResponse;
 
 import com.google.gson.Gson;
 
+import br.com.devgui.model.Player;
+
 public class RiotApiService {
 	
 	private final String URL_ACCOUNT = "https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/";
@@ -27,5 +29,24 @@ public class RiotApiService {
 	
 	private HttpResponse<String> sendRequest(HttpRequest request) throws IOException, InterruptedException {
 		return client.send(request, HttpResponse.BodyHandlers.ofString());
+	}
+	
+	public Player getPlayer(String gameName, String tagLine) {
+		try {
+			String urlWithParams = URL_ACCOUNT + gameName + "/" + tagLine + "?api_key=" + API_KEY;
+			HttpRequest request = createRequest(urlWithParams);
+			HttpResponse<String> response = sendRequest(request);
+			
+			if (response.statusCode() == 400) {
+				throw new RuntimeException("Player not found.");
+			}
+			
+			return gson.fromJson(response.body(), Player.class);
+			
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch(InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
