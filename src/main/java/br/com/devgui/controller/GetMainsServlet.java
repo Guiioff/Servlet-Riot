@@ -7,13 +7,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet("/teste")
-public class TesteServlet extends HttpServlet {
+@WebServlet("/get-mains/*")
+public class GetMainsServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-	@Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("Servlet de teste funcionando!");
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    	super.doGet(req, resp);
     }
 }
