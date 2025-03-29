@@ -14,6 +14,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import br.com.devgui.model.Champion;
 import br.com.devgui.model.Player;
+import io.github.cdimascio.dotenv.Dotenv;
 
 public class RiotApiService {
 
@@ -22,7 +23,8 @@ public class RiotApiService {
   private final String URL_CHAMPION_MASTERY =
       "https://br1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/";
 
-  private final String API_KEY = "RGAPI-3851e4cc-fe05-4f03-ac1c-a25aa5437708";
+  private final Dotenv dotenv = Dotenv.load();
+  private final String API_KEY = dotenv.get("RIOT_API_KEY");
 
   private final Gson gson = new Gson();
   private final HttpClient client = HttpClient.newHttpClient();
