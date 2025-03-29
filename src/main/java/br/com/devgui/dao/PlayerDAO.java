@@ -21,7 +21,7 @@ public class PlayerDAO {
 
     try (PreparedStatement stmt = connection.prepareStatement(sql)) {
       stmt.setString(1, gameName);
-      stmt.setString(2, tagLine.toUpperCase());
+      stmt.setString(2, tagLine);
       ResultSet rs = stmt.executeQuery();
 
       if (rs.next()) {

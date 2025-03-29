@@ -6,6 +6,7 @@ import java.util.Optional;
 import com.google.gson.Gson;
 import br.com.devgui.controller.response.ChampionResponseDTO;
 import br.com.devgui.controller.response.MainsDetailsResponseDTO;
+import br.com.devgui.dao.ChampionDAO;
 import br.com.devgui.dao.PlayerDAO;
 import br.com.devgui.model.Champion;
 import br.com.devgui.model.Player;
@@ -26,6 +27,7 @@ public class GetMainsServlet extends HttpServlet {
   private final Gson gson = new Gson();
 
   private final PlayerDAO playerDAO = new PlayerDAO();
+  private final ChampionDAO championDAO = new ChampionDAO();
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -50,12 +52,21 @@ public class GetMainsServlet extends HttpServlet {
       playerDAO.save(player);
     }
 
+    List<Champion> champions = championDAO.findByPlayerId(player.getPuuid());
 
-    List<Champion> champions = riotApiService.getChampionMasteryId(player.getPuuid());
+    if (champions.isEmpty()) {
+      champions = riotApiService.getChampionMasteryId(player.getPuuid());
+      List<Champion> championsCompleted = dataDragonApiService.getChampionDetails(champions);
 
-    List<Champion> championsCompleted = dataDragonApiService.getChampionDetails(champions);
+      for (Champion champion : championsCompleted) {
+        championDAO.save(champion);
+        championDAO.savePlayerChampions(player.getPuuid(), champion.getChampionId(),
+            champion.getMasteryPoints());;
+      }
 
-    List<ChampionResponseDTO> championsDTO = championsCompleted.stream()
+    }
+
+    List<ChampionResponseDTO> championsDTO = champions.stream()
         .map(c -> new ChampionResponseDTO(c.getChampionName(), c.getTitle(), c.getMasteryPoints()))
         .toList();
 
