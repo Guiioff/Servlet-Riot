@@ -6,6 +6,7 @@ import java.util.Optional;
 import com.google.gson.Gson;
 import br.com.devgui.controller.response.ChampionResponseDTO;
 import br.com.devgui.controller.response.MainsDetailsResponseDTO;
+import br.com.devgui.dao.PlayerDAO;
 import br.com.devgui.model.Champion;
 import br.com.devgui.model.Player;
 import br.com.devgui.service.DataDragonApiService;
@@ -24,6 +25,8 @@ public class GetMainsServlet extends HttpServlet {
   private final DataDragonApiService dataDragonApiService = new DataDragonApiService();
   private final Gson gson = new Gson();
 
+  private final PlayerDAO playerDAO = new PlayerDAO();
+
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
@@ -36,7 +39,18 @@ public class GetMainsServlet extends HttpServlet {
     String gameName = params.get()[0];
     String tagLine = params.get()[1];
 
-    Player player = riotApiService.getPlayer(gameName, tagLine);
+    Optional<Player> playerOptional = playerDAO.findByGameNameAndTagLine(gameName, tagLine);
+    Player player;
+
+    if (playerOptional.isPresent()) {
+      player = playerOptional.get();
+
+    } else {
+      player = riotApiService.getPlayer(gameName, tagLine);
+      playerDAO.save(player);
+    }
+
+
     List<Champion> champions = riotApiService.getChampionMasteryId(player.getPuuid());
 
     List<Champion> championsCompleted = dataDragonApiService.getChampionDetails(champions);
