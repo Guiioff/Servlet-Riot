@@ -3,6 +3,7 @@ package br.com.devgui.config;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import br.com.devgui.exception.DatabaseException;
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class DataBaseConnection implements AutoCloseable {
@@ -26,12 +27,10 @@ public class DataBaseConnection implements AutoCloseable {
       return DriverManager.getConnection(URL, USER, PASSWORD);
 
     } catch (SQLException e) {
-      System.err.println("Error connecting to the database: " + e.getMessage());
-      return null;
+      throw new DatabaseException("Error connecting to database.", e);
 
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException(
-          "PostgreSQL JDBC Driver not found. Make sure the driver JAR is in the classpath.");
+      throw new DatabaseException("PostgreSQL Driver not found.", e);
     }
   }
 
@@ -41,7 +40,7 @@ public class DataBaseConnection implements AutoCloseable {
       try {
         connection.close();
       } catch (SQLException e) {
-        throw new RuntimeException("Error while closing connection.");
+        throw new DatabaseException("Error while closing connection.", e);
       }
     }
   }
