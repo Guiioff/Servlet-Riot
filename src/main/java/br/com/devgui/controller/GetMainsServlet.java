@@ -6,6 +6,7 @@ import java.util.Optional;
 import com.google.gson.Gson;
 import br.com.devgui.controller.response.ChampionResponseDTO;
 import br.com.devgui.controller.response.MainsDetailsResponseDTO;
+import br.com.devgui.exception.GlobalExceptionHandler;
 import br.com.devgui.model.Champion;
 import br.com.devgui.model.Player;
 import br.com.devgui.service.MainsService;
@@ -26,28 +27,33 @@ public class GetMainsServlet extends HttpServlet {
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
 
-    Optional<String[]> params = getParams(req.getPathInfo());
-    if (params.isEmpty()) {
-      resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parâmetros inválidos.");
-      return;
+    try {
+      Optional<String[]> params = getParams(req.getPathInfo());
+      if (params.isEmpty()) {
+        throw new IllegalArgumentException("Invalid parameters.");
+      }
+
+      String gameName = params.get()[0];
+      String tagLine = params.get()[1];
+
+      Player player = mainsService.getOrFetchPlayer(gameName, tagLine);
+      List<Champion> champions = mainsService.getOrFetchChampions(player);
+
+      List<ChampionResponseDTO> championsDTO = champions.stream()
+          .map(
+              c -> new ChampionResponseDTO(c.getChampionName(), c.getTitle(), c.getMasteryPoints()))
+          .toList();
+
+      MainsDetailsResponseDTO detailsResponseDTO =
+          new MainsDetailsResponseDTO(player.getGameName(), player.getTagLine(), championsDTO);
+
+      String responseJson = gson.toJson(detailsResponseDTO);
+      resp.setContentType("application/json");
+      resp.getWriter().append(responseJson);
+
+    } catch (Exception e) {
+      GlobalExceptionHandler.handleException(e, req, resp);
     }
-
-    String gameName = params.get()[0];
-    String tagLine = params.get()[1];
-
-    Player player = mainsService.getOrFetchPlayer(gameName, tagLine);
-    List<Champion> champions = mainsService.getOrFetchChampions(player);
-
-    List<ChampionResponseDTO> championsDTO = champions.stream()
-        .map(c -> new ChampionResponseDTO(c.getChampionName(), c.getTitle(), c.getMasteryPoints()))
-        .toList();
-
-    MainsDetailsResponseDTO detailsResponseDTO =
-        new MainsDetailsResponseDTO(player.getGameName(), player.getTagLine(), championsDTO);
-
-    String responseJson = gson.toJson(detailsResponseDTO);
-    resp.setContentType("application/json");
-    resp.getWriter().append(responseJson);
   }
 
   private static Optional<String[]> getParams(String pathInfo) {
