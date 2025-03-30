@@ -3,12 +3,15 @@ package br.com.devgui.config;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import io.github.cdimascio.dotenv.Dotenv;
 
 public class DataBaseConnection implements AutoCloseable {
 
-  private static final String URL = "jdbc:postgresql://localhost:5432/servlet-riot-1";
-  private static final String USER = "postgres";
-  private static final String PASSWORD = "prog123";
+  private final Dotenv dotenv = Dotenv.load();
+
+  private final String URL = dotenv.get("URL_DB");
+  private final String USER = dotenv.get("USER_DB");
+  private final String PASSWORD = dotenv.get("PASSWORD_DB");
   private final Connection connection;
 
   public DataBaseConnection() {
