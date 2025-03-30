@@ -6,11 +6,11 @@ import java.util.Optional;
 import com.google.gson.Gson;
 import br.com.devgui.controller.response.ChampionResponseDTO;
 import br.com.devgui.controller.response.MainsDetailsResponseDTO;
-import br.com.devgui.dao.ChampionDAO;
-import br.com.devgui.dao.PlayerDAO;
 import br.com.devgui.model.Champion;
 import br.com.devgui.model.Player;
+import br.com.devgui.service.ChampionService;
 import br.com.devgui.service.DataDragonApiService;
+import br.com.devgui.service.PlayerService;
 import br.com.devgui.service.RiotApiService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -26,8 +26,8 @@ public class GetMainsServlet extends HttpServlet {
   private final DataDragonApiService dataDragonApiService = new DataDragonApiService();
   private final Gson gson = new Gson();
 
-  private final PlayerDAO playerDAO = new PlayerDAO();
-  private final ChampionDAO championDAO = new ChampionDAO();
+  private final PlayerService playerService = new PlayerService();
+  private final ChampionService championService = new ChampionService();
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -41,7 +41,7 @@ public class GetMainsServlet extends HttpServlet {
     String gameName = params.get()[0];
     String tagLine = params.get()[1];
 
-    Optional<Player> playerOptional = playerDAO.findByGameNameAndTagLine(gameName, tagLine);
+    Optional<Player> playerOptional = playerService.getPlayer(gameName, tagLine);
     Player player;
 
     if (playerOptional.isPresent()) {
@@ -49,18 +49,18 @@ public class GetMainsServlet extends HttpServlet {
 
     } else {
       player = riotApiService.getPlayer(gameName, tagLine);
-      playerDAO.save(player);
+      playerService.savePlayer(player);
     }
 
-    List<Champion> champions = championDAO.findByPlayerId(player.getPuuid());
+    List<Champion> champions = championService.getChampionsByPlayerId(player.getPuuid());
 
     if (champions.isEmpty()) {
       champions = riotApiService.getChampionMasteryId(player.getPuuid());
       List<Champion> championsCompleted = dataDragonApiService.getChampionDetails(champions);
 
       for (Champion champion : championsCompleted) {
-        championDAO.save(champion);
-        championDAO.savePlayerChampions(player.getPuuid(), champion.getChampionId(),
+        championService.saveChampion(champion);
+        championService.savePlayerChampions(player.getPuuid(), champion.getChampionId(),
             champion.getMasteryPoints());;
       }
 
