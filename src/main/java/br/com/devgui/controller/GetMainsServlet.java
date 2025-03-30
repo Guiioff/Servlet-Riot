@@ -8,10 +8,7 @@ import br.com.devgui.controller.response.ChampionResponseDTO;
 import br.com.devgui.controller.response.MainsDetailsResponseDTO;
 import br.com.devgui.model.Champion;
 import br.com.devgui.model.Player;
-import br.com.devgui.service.ChampionService;
-import br.com.devgui.service.DataDragonApiService;
-import br.com.devgui.service.PlayerService;
-import br.com.devgui.service.RiotApiService;
+import br.com.devgui.service.MainsService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -22,49 +19,24 @@ import jakarta.servlet.http.HttpServletResponse;
 public class GetMainsServlet extends HttpServlet {
 
   private static final long serialVersionUID = 1L;
-  private final RiotApiService riotApiService = new RiotApiService();
-  private final DataDragonApiService dataDragonApiService = new DataDragonApiService();
+  private final MainsService mainsService = new MainsService();
   private final Gson gson = new Gson();
-
-  private final PlayerService playerService = new PlayerService();
-  private final ChampionService championService = new ChampionService();
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-    Optional<String[]> params = getParams(req.getPathInfo());
 
+    Optional<String[]> params = getParams(req.getPathInfo());
     if (params.isEmpty()) {
-      throw new RuntimeException("ta vazio os params.");
+      resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Parâmetros inválidos.");
+      return;
     }
 
     String gameName = params.get()[0];
     String tagLine = params.get()[1];
 
-    Optional<Player> playerOptional = playerService.getPlayer(gameName, tagLine);
-    Player player;
-
-    if (playerOptional.isPresent()) {
-      player = playerOptional.get();
-
-    } else {
-      player = riotApiService.getPlayer(gameName, tagLine);
-      playerService.savePlayer(player);
-    }
-
-    List<Champion> champions = championService.getChampionsByPlayerId(player.getPuuid());
-
-    if (champions.isEmpty()) {
-      champions = riotApiService.getChampionMasteryId(player.getPuuid());
-      List<Champion> championsCompleted = dataDragonApiService.getChampionDetails(champions);
-
-      for (Champion champion : championsCompleted) {
-        championService.saveChampion(champion);
-        championService.savePlayerChampions(player.getPuuid(), champion.getChampionId(),
-            champion.getMasteryPoints());;
-      }
-
-    }
+    Player player = mainsService.getOrFetchPlayer(gameName, tagLine);
+    List<Champion> champions = mainsService.getOrFetchChampions(player);
 
     List<ChampionResponseDTO> championsDTO = champions.stream()
         .map(c -> new ChampionResponseDTO(c.getChampionName(), c.getTitle(), c.getMasteryPoints()))
@@ -74,6 +46,7 @@ public class GetMainsServlet extends HttpServlet {
         new MainsDetailsResponseDTO(player.getGameName(), player.getTagLine(), championsDTO);
 
     String responseJson = gson.toJson(detailsResponseDTO);
+    resp.setContentType("application/json");
     resp.getWriter().append(responseJson);
   }
 
