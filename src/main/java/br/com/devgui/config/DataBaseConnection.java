@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class DataBaseConnection {
+public class DataBaseConnection implements AutoCloseable {
 
   private static final String URL = "jdbc:postgresql://localhost:5432/servlet-riot-1";
   private static final String USER = "postgres";
@@ -32,7 +32,8 @@ public class DataBaseConnection {
     }
   }
 
-  public void closeConnection() {
+  @Override
+  public void close() {
     if (connection != null) {
       try {
         connection.close();
@@ -40,6 +41,10 @@ public class DataBaseConnection {
         throw new RuntimeException("Error while closing connection.");
       }
     }
+  }
+
+  public Connection getConnection() {
+    return this.connection;
   }
 
 }
