@@ -12,6 +12,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import br.com.devgui.exception.RiotApiException;
 import br.com.devgui.model.Champion;
 import br.com.devgui.model.Player;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -45,15 +46,18 @@ public class RiotApiService {
       HttpResponse<String> response = sendRequest(request);
 
       if (response.statusCode() == 400) {
-        throw new RuntimeException("Player not found.");
+        throw new RiotApiException(
+            "Player " + gameName + " not found in Riot API. Status code: " + response.statusCode());
       }
 
       return gson.fromJson(response.body(), Player.class);
 
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new RiotApiException("Failed to communicate with the Riot API.", e);
+
     } catch (InterruptedException e) {
-      throw new RuntimeException(e);
+      Thread.currentThread().interrupt();
+      throw new RiotApiException("The request to Riot API was interrupted.", e);
     }
   }
 
@@ -64,7 +68,7 @@ public class RiotApiService {
       HttpResponse<String> response = sendRequest(request);
 
       if (response.statusCode() == 400) {
-        throw new RuntimeException("PUUID is wrong.");
+        throw new RiotApiException("PUUID is wrong. Status code: " + response.statusCode());
       }
 
       String responseBody = response.body();
@@ -82,9 +86,11 @@ public class RiotApiService {
       return champions;
 
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new RiotApiException("Failed to communicate with the Riot API.", e);
+
     } catch (InterruptedException e) {
-      throw new RuntimeException(e);
+      Thread.currentThread().interrupt();
+      throw new RiotApiException("The request to Riot API was interrupted.", e);
     }
   }
 }
