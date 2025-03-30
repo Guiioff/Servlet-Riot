@@ -10,6 +10,7 @@ import java.util.Map;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import br.com.devgui.exception.DatadragonException;
 import br.com.devgui.model.Champion;
 
 public class DataDragonApiService {
@@ -34,7 +35,8 @@ public class DataDragonApiService {
       HttpResponse<String> response = sendRequest(request);
 
       if (response.statusCode() != 200) {
-        throw new RuntimeException("Error in DataDragon.");
+        throw new DatadragonException(
+            "Error connecting to DataDragon API. Status code: " + response.statusCode());
       }
 
       List<String> championsIds = champions.stream().map(c -> c.getChampionId()).toList();
@@ -60,8 +62,12 @@ public class DataDragonApiService {
       }
       return champions;
 
-    } catch (IOException | InterruptedException e) {
-      throw new RuntimeException(e);
+    } catch (IOException e) {
+      throw new DatadragonException("Failed to communicate with the DataDragon API.", e);
+
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new DatadragonException("The request to DataDragon API was interrupted.", e);
     }
   }
 
